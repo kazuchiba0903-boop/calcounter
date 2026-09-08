@@ -455,6 +455,22 @@
     line-height:1.6;
   }
   .backup-note.error{ color:var(--danger); }
+  .danger-btn{ border-color:var(--danger); color:var(--danger); }
+  .danger-btn:active{ background:var(--danger); color:#fff; }
+  .import-confirm{
+    margin-top:14px;
+    padding:14px;
+    border-radius:12px;
+    border:1.5px solid var(--gold);
+    background:var(--gold-soft);
+  }
+  .import-confirm-text{
+    margin:0 0 12px;
+    font-size:13px;
+    color:var(--ink);
+    line-height:1.6;
+    white-space:pre-line;
+  }
 
   /* ---------- toast ---------- */
   .toast{
@@ -592,6 +608,14 @@
         </div>
         <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none;">
         <p class="backup-note" id="backupNote"></p>
+
+        <div class="import-confirm" id="importConfirm" style="display:none;">
+          <p class="import-confirm-text" id="importConfirmText"></p>
+          <div class="backup-buttons">
+            <button class="secondary-btn" id="importCancelBtn">キャンセル</button>
+            <button class="secondary-btn danger-btn" id="importConfirmBtn">この内容で復元する</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1075,6 +1099,15 @@
     csvFileInput.click();
   });
 
+  var importConfirm = document.getElementById("importConfirm");
+  var importConfirmText = document.getElementById("importConfirmText");
+  var pendingImport = null;
+
+  function hideImportConfirm(){
+    pendingImport = null;
+    importConfirm.style.display = "none";
+  }
+
   csvFileInput.addEventListener("change", function(){
     var file = csvFileInput.files && csvFileInput.files[0];
     if(!file) return;
@@ -1084,29 +1117,42 @@
       try{
         imported = csvToEntries(String(reader.result));
       }catch(err){
+        hideImportConfirm();
         setBackupNote("CSVの読み込みに失敗しました。ファイルの形式を確認してください。", true);
         return;
       }
       if(imported.length === 0){
+        hideImportConfirm();
         setBackupNote("有効な記録がCSVから見つかりませんでした。", true);
         return;
       }
-      var ok = window.confirm(
-        imported.length + "件の記録が見つかりました。\n現在のすべての記録をこの内容で置き換えます。よろしいですか？"
-      );
-      if(!ok) return;
-
-      entries = imported;
-      saveEntries();
-      resetAddFood();
-      renderHome();
-      renderHistory();
-      setBackupNote(imported.length + "件の記録を復元しました。");
+      pendingImport = imported;
+      setBackupNote("");
+      importConfirmText.textContent = imported.length + "件の記録が見つかりました。「この内容で復元する」を押すと、現在のすべての記録をこの内容で置き換えます。";
+      importConfirm.style.display = "block";
+      importConfirm.scrollIntoView({ behavior:"smooth", block:"center" });
     };
     reader.onerror = function(){
+      hideImportConfirm();
       setBackupNote("ファイルの読み込みに失敗しました。", true);
     };
     reader.readAsText(file, "utf-8");
+  });
+
+  document.getElementById("importConfirmBtn").addEventListener("click", function(){
+    if(!pendingImport) return;
+    var count = pendingImport.length;
+    entries = pendingImport;
+    saveEntries();
+    resetAddFood();
+    renderHome();
+    renderHistory();
+    hideImportConfirm();
+    setBackupNote(count + "件の記録を復元しました。");
+  });
+  document.getElementById("importCancelBtn").addEventListener("click", function(){
+    hideImportConfirm();
+    setBackupNote("復元をキャンセルしました。");
   });
 
   /* ---------------- nav wiring ---------------- */
