@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="カロリー手帖">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#3B6B4A">
-<title>ついたち食録</title>
+<title>カロリー手帖</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233B6B4A'/%3E%3Ctext x='32' y='42' font-size='30' text-anchor='middle' fill='white' font-family='sans-serif'%3E食%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -90,7 +91,7 @@
     flex:1 1 auto;
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
-    padding-bottom:24px;
+    padding-bottom: calc(80px + var(--safe-bottom));
   }
 
   /* ---------- HOME ---------- */
@@ -220,11 +221,15 @@
 
   /* ---------- bottom nav ---------- */
   .tabbar{
-    flex:0 0 auto;
+    position:fixed;
+    left:0; right:0; bottom:0;
+    margin:0 auto;
+    max-width:480px;
     display:flex;
     border-top:1px solid var(--line);
     background:var(--surface);
     padding-bottom:var(--safe-bottom);
+    z-index:10;
   }
   .tab{
     flex:1;
@@ -258,7 +263,14 @@
   }
   .food-input:focus{ border-color:var(--accent); }
 
+  .date-nav{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
   .date-input{
+    flex:1 1 auto;
+    min-width:0;
     width:100%;
     font-size:16px;
     font-family:'Work Sans', sans-serif;
@@ -271,6 +283,21 @@
     -webkit-appearance:none;
   }
   .date-input:focus{ border-color:var(--accent); }
+  .date-arrow{
+    flex:0 0 auto;
+    width:42px; height:42px;
+    appearance:none;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .date-arrow svg{ width:19px; height:19px; }
+  .date-arrow:active{ background:var(--accent-soft); border-color:var(--accent); }
+  .date-arrow:disabled{ color:var(--ink-faint); opacity:0.5; cursor:default; }
+  .date-arrow:disabled:active{ background:var(--surface); border-color:var(--line); }
 
   .date-total{
     margin:10px 2px 0;
@@ -475,13 +502,21 @@
     <div class="topbar">
       <div>
         <p class="home-date" id="homeDate"></p>
-        <h1>ついたち食録</h1>
+        <h1>カロリー手帖</h1>
       </div>
     </div>
     <div class="scroll">
       <div class="form-wrap">
         <p class="field-label">記録する日付</p>
-        <input class="date-input" id="entryDateInput" type="date">
+        <div class="date-nav">
+          <button class="date-arrow" id="datePrevBtn" type="button" aria-label="前の日">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+          </button>
+          <input class="date-input" id="entryDateInput" type="date">
+          <button class="date-arrow" id="dateNextBtn" type="button" aria-label="次の日">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+        </div>
 
         <p class="field-label" style="margin-top:22px;">過去に入力したものから選ぶ</p>
         <select class="food-select" id="foodSelect">
@@ -611,34 +646,30 @@
     return num.toLocaleString("ja-JP");
   }
 
-  /* ---------------- storage (localStorage: 端末のSafari内に保存) ---------------- */
+  /* ---------------- storage ---------------- */
   function loadEntries(){
-    return Promise.resolve().then(function(){
-      try{
-        var raw = localStorage.getItem(STORAGE_KEY);
-        entries = raw ? JSON.parse(raw) : [];
-      }catch(e){
+    return window.storage.get(STORAGE_KEY, false)
+      .then(function(res){
+        entries = res && res.value ? JSON.parse(res.value) : [];
+      })
+      .catch(function(){
         entries = [];
-      }
-    }).then(function(){
-      loaded = true;
-      renderHome();
-      renderHistory();
-    });
+      })
+      .then(function(){
+        loaded = true;
+        renderHome();
+        renderHistory();
+      });
   }
   function saveEntries(){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    }catch(e){
-      /* 保存に失敗しても操作は継続 */
-    }
-    return Promise.resolve();
+    return window.storage.set(STORAGE_KEY, JSON.stringify(entries), false)
+      .catch(function(){ /* 保存に失敗しても操作は継続 */ });
   }
 
   /* ---------------- derived data ---------------- */
-  function foodStats(){
+  function foodStats(list){
     var map = {};
-    entries.forEach(function(e){
+    (list || entries).forEach(function(e){
       if(!map[e.food]){
         map[e.food] = { name:e.food, count:0, lastTs:0, calValues:{} };
       }
@@ -649,6 +680,12 @@
       s.calValues[key] = (s.calValues[key]||0) + 1;
     });
     return map;
+  }
+
+  function recentDaysCutoffKey(days){
+    var d = new Date();
+    d.setDate(d.getDate() - (days - 1));
+    return todayKey(d);
   }
 
   /* ---------------- HOME ---------------- */
@@ -727,7 +764,9 @@
   }
 
   function populateFoodSelect(){
-    var stats = foodStats();
+    var cutoff = recentDaysCutoffKey(5);
+    var recent = entries.filter(function(e){ return e.date >= cutoff; });
+    var stats = foodStats(recent);
     var names = Object.keys(stats).sort(function(a,b){ return stats[b].lastTs - stats[a].lastTs; });
     foodSelect.innerHTML = '<option value="" selected disabled>選択してください</option>';
     names.forEach(function(name){
@@ -777,12 +816,27 @@
     var total = dayEntries.reduce(function(s,e){ return s + e.calories; }, 0);
     dateHeroLabel.textContent = formatDateLabel(d) + "の合計";
     dateHeroTotal.textContent = formatNum(total);
+
+    dateNextBtn.disabled = (d >= entryDateInput.max);
   }
 
   entryDateInput.addEventListener("change", function(){
     if(!entryDateInput.value) entryDateInput.value = todayKey();
     updateDateSummary();
   });
+
+  var datePrevBtn = document.getElementById("datePrevBtn");
+  var dateNextBtn = document.getElementById("dateNextBtn");
+  function shiftEntryDate(deltaDays){
+    var base = entryDateInput.value ? new Date(entryDateInput.value + "T00:00:00") : new Date();
+    base.setDate(base.getDate() + deltaDays);
+    var newKey = todayKey(base);
+    if(newKey > entryDateInput.max) return;
+    entryDateInput.value = newKey;
+    updateDateSummary();
+  }
+  datePrevBtn.addEventListener("click", function(){ shiftEntryDate(-1); });
+  dateNextBtn.addEventListener("click", function(){ shiftEntryDate(1); });
 
   function refreshChips(){
     var name = foodInput.value.trim();
