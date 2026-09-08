@@ -57,7 +57,7 @@
   /* ---------- shared top bar ---------- */
   .topbar{
     flex:0 0 auto;
-    padding: calc(16px + var(--safe-top)) 20px 14px;
+    padding: 16px 20px 14px;
     display:flex;
     align-items:center;
     gap:10px;
@@ -91,7 +91,7 @@
     flex:1 1 auto;
     overflow-y:auto;
     -webkit-overflow-scrolling:touch;
-    padding-bottom: calc(80px + var(--safe-bottom));
+    padding-bottom: 24px;
   }
 
   /* ---------- HOME ---------- */
@@ -219,17 +219,13 @@
   .fab:active{ background:var(--accent-dark); }
   .fab svg{ width:24px; height:24px; }
 
-  /* ---------- bottom nav ---------- */
+  /* ---------- top nav ---------- */
   .tabbar{
-    position:fixed;
-    left:0; right:0; bottom:0;
-    margin:0 auto;
-    max-width:480px;
+    flex:0 0 auto;
     display:flex;
-    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
     background:var(--surface);
-    padding-bottom:var(--safe-bottom);
-    z-index:10;
+    padding-top:var(--safe-top);
   }
   .tab{
     flex:1;
@@ -464,7 +460,7 @@
   .toast{
     position:absolute;
     left:20px; right:20px;
-    bottom: calc(88px + var(--safe-bottom));
+    bottom: calc(24px + var(--safe-bottom));
     background:var(--ink);
     color:#fff;
     padding:12px 16px;
@@ -499,6 +495,16 @@
 
   <!-- ============ HOME (食べたもの入力を兼ねる) ============ -->
   <section class="view active" data-view="home">
+    <nav class="tabbar">
+      <button class="tab active" data-tab="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
+        <span>今日</span>
+      </button>
+      <button class="tab" data-tab="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6"/><path d="M4.6 15a8 8 0 1 0 1.5-8.5L4 10"/><path d="M12 8v5l3 2"/></svg>
+        <span>履歴</span>
+      </button>
+    </nav>
     <div class="topbar">
       <div>
         <p class="home-date" id="homeDate"></p>
@@ -548,20 +554,20 @@
         <p class="date-foods-empty" id="dateFoodsEmpty"></p>
       </div>
     </div>
-    <nav class="tabbar">
-      <button class="tab active" data-tab="home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
-        <span>今日</span>
-      </button>
-      <button class="tab" data-tab="history">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6"/><path d="M4.6 15a8 8 0 1 0 1.5-8.5L4 10"/><path d="M12 8v5l3 2"/></svg>
-        <span>履歴</span>
-      </button>
-    </nav>
   </section>
 
   <!-- ============ HISTORY ============ -->
   <section class="view" data-view="history">
+    <nav class="tabbar">
+      <button class="tab" data-tab="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
+        <span>今日</span>
+      </button>
+      <button class="tab active" data-tab="history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6"/><path d="M4.6 15a8 8 0 1 0 1.5-8.5L4 10"/><path d="M12 8v5l3 2"/></svg>
+        <span>履歴</span>
+      </button>
+    </nav>
     <div class="topbar">
       <button class="back-btn" data-back="home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
@@ -588,16 +594,6 @@
         <p class="backup-note" id="backupNote"></p>
       </div>
     </div>
-    <nav class="tabbar">
-      <button class="tab" data-tab="home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
-        <span>今日</span>
-      </button>
-      <button class="tab active" data-tab="history">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6"/><path d="M4.6 15a8 8 0 1 0 1.5-8.5L4 10"/><path d="M12 8v5l3 2"/></svg>
-        <span>履歴</span>
-      </button>
-    </nav>
   </section>
 
   <div class="toast" id="toast">
