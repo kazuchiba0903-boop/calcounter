@@ -666,24 +666,56 @@
     return num.toLocaleString("ja-JP");
   }
 
-  /* ---------------- storage ---------------- */
-  function loadEntries(){
-    return window.storage.get(STORAGE_KEY, false)
-      .then(function(res){
-        entries = res && res.value ? JSON.parse(res.value) : [];
-      })
-      .catch(function(){
-        entries = [];
-      })
-      .then(function(){
-        loaded = true;
-        renderHome();
-        renderHistory();
-      });
+  /* ---------------- storage ----------------
+     Claudeのアーティファクト内では window.storage を使い、
+     GitHub Pagesなど単体サイトとして動く場合は localStorage に自動で切り替える。 */
+  function hasClaudeStorage(){
+    return typeof window !== "undefined" &&
+      window.storage &&
+      typeof window.storage.get === "function" &&
+      typeof window.storage.set === "function";
   }
+
+  function loadEntries(){
+    if(hasClaudeStorage()){
+      return window.storage.get(STORAGE_KEY, false)
+        .then(function(res){
+          entries = res && res.value ? JSON.parse(res.value) : [];
+        })
+        .catch(function(){
+          entries = [];
+        })
+        .then(function(){
+          loaded = true;
+          renderHome();
+          renderHistory();
+        });
+    }
+    return Promise.resolve().then(function(){
+      try{
+        var raw = localStorage.getItem(STORAGE_KEY);
+        entries = raw ? JSON.parse(raw) : [];
+      }catch(e){
+        entries = [];
+      }
+    }).then(function(){
+      loaded = true;
+      renderHome();
+      renderHistory();
+    });
+  }
+
   function saveEntries(){
-    return window.storage.set(STORAGE_KEY, JSON.stringify(entries), false)
-      .catch(function(){ /* 保存に失敗しても操作は継続 */ });
+    if(hasClaudeStorage()){
+      return window.storage.set(STORAGE_KEY, JSON.stringify(entries), false)
+        .catch(function(){ /* 保存に失敗しても操作は継続 */ });
+    }
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }catch(e){
+      /* 保存に失敗しても操作は継続 */
+    }
+    return Promise.resolve();
   }
 
   /* ---------------- derived data ---------------- */
@@ -1141,14 +1173,19 @@
 
   document.getElementById("importConfirmBtn").addEventListener("click", function(){
     if(!pendingImport) return;
-    var count = pendingImport.length;
-    entries = pendingImport;
-    saveEntries();
-    resetAddFood();
-    renderHome();
-    renderHistory();
-    hideImportConfirm();
-    setBackupNote(count + "件の記録を復元しました。");
+    try{
+      var count = pendingImport.length;
+      entries = pendingImport;
+      saveEntries();
+      resetAddFood();
+      renderHome();
+      renderHistory();
+      hideImportConfirm();
+      setBackupNote(count + "件の記録を復元しました。");
+    }catch(err){
+      hideImportConfirm();
+      setBackupNote("復元中にエラーが発生しました：" + (err && err.message ? err.message : err), true);
+    }
   });
   document.getElementById("importCancelBtn").addEventListener("click", function(){
     hideImportConfirm();
