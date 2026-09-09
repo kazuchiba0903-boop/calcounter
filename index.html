@@ -178,11 +178,12 @@
   .entry-del{
     appearance:none; border:none; background:none;
     color:var(--ink-faint);
-    width:26px; height:26px;
+    width:38px; height:38px;
+    margin:-6px -6px -6px 0;
     flex:0 0 auto;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    border-radius:6px;
+    border-radius:8px;
   }
   .entry-del:active{ background:var(--line); color:var(--danger); }
 
@@ -279,6 +280,12 @@
     -webkit-appearance:none;
   }
   .date-input:focus{ border-color:var(--accent); }
+  .time-input{
+    width:auto;
+    flex:0 0 auto;
+    padding:9px 12px;
+    font-size:14px;
+  }
   .date-arrow{
     flex:0 0 auto;
     width:42px; height:42px;
@@ -548,6 +555,9 @@
           </button>
         </div>
 
+        <p class="field-label" style="margin-top:18px;">時刻</p>
+        <input class="date-input time-input" id="entryTimeInput" type="time">
+
         <p class="field-label" style="margin-top:22px;">過去に入力したものから選ぶ</p>
         <select class="food-select" id="foodSelect">
           <option value="" selected disabled>選択してください</option>
@@ -789,6 +799,7 @@
   var foodInput = document.getElementById("foodInput");
   var foodSelect = document.getElementById("foodSelect");
   var entryDateInput = document.getElementById("entryDateInput");
+  var entryTimeInput = document.getElementById("entryTimeInput");
   var dateHeroLabel = document.getElementById("dateHeroLabel");
   var dateHeroTotal = document.getElementById("dateHeroTotal");
   var calInput = document.getElementById("calInput");
@@ -812,6 +823,7 @@
     calInput.value = "";
     calChips.innerHTML = "";
     calInputRow.classList.remove("filled");
+    entryTimeInput.value = formatTime(new Date());
     updateRegisterState();
   }
 
@@ -947,16 +959,16 @@
 
     var now = new Date();
     var dateStr = entryDateInput.value || todayKey(now);
-    var timeStr = formatTime(now);
+    var timeStr = entryTimeInput.value || formatTime(now);
     var combined = new Date(dateStr + "T" + timeStr + ":00");
-    var isToday = dateStr === todayKey(now);
+    var ts = isNaN(combined.getTime()) ? now.getTime() : combined.getTime();
 
     entries.push({
       id: "e" + now.getTime() + Math.random().toString(36).slice(2,7),
       food: food,
       calories: v,
       date: dateStr,
-      ts: isToday ? now.getTime() : combined.getTime()
+      ts: ts
     });
     saveEntries();
 
@@ -1015,8 +1027,12 @@
         li.innerHTML =
           '<span class="entry-time num">' + formatTime(d) + '</span>' +
           '<span class="entry-food">' + escapeHtml(e.food) + '</span>' +
-          '<span class="entry-cal num">' + formatNum(e.calories) + 'kcal</span>';
-        li.addEventListener("click", function(){
+          '<span class="entry-cal num">' + formatNum(e.calories) + 'kcal</span>' +
+          '<button class="entry-del" aria-label="削除" data-id="' + e.id + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
+          '</button>';
+        li.addEventListener("click", function(ev){
+          if(ev.target.closest(".entry-del")) return;
           resetAddFood();
           foodInput.value = e.food;
           calInput.value = e.calories;
@@ -1032,6 +1048,11 @@
     });
   }
   historySearch.addEventListener("input", renderHistory);
+
+  historyList.addEventListener("click", function(ev){
+    var btn = ev.target.closest(".entry-del");
+    if(btn) deleteEntry(btn.dataset.id);
+  });
 
   /* ---------------- CSV backup / restore ---------------- */
   function csvEscape(field){
@@ -1203,6 +1224,7 @@
   /* ---------------- init ---------------- */
   entryDateInput.value = todayKey();
   entryDateInput.max = todayKey();
+  entryTimeInput.value = formatTime(new Date());
   loadEntries().then(function(){
     populateFoodSelect();
     updateDateSummary();
