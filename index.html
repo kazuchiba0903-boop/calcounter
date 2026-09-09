@@ -83,13 +83,16 @@
     }
     .check:active{transform:scale(.94)}
     .bulk-wrap{
+      display:flex;justify-content:flex-end;
       padding:8px 12px 12px;border-top:1px solid var(--line);background:#fcfcfb
     }
     .bulk-delete{
-      width:100%;border:1px solid #d9d9d5;background:#fff;color:#555;
-      border-radius:12px;padding:10px 12px;font-weight:800
+      border:0;background:var(--text);color:#fff;border-radius:12px;
+      padding:11px 15px;font-weight:800;min-width:64px
     }
-    .bulk-delete:disabled{opacity:.42;cursor:default}
+    .bulk-delete:disabled{
+      background:#e7e7e3;color:#aaa;cursor:default
+    }
     .form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fcfcfb}
     .form input{
       min-width:0;flex:1;border:1px solid #dcdedb;background:#fff;border-radius:12px;padding:12px 13px;
@@ -137,7 +140,7 @@
         </div>
         <div class="items" id="store-list"></div>
         <div class="bulk-wrap">
-          <button class="bulk-delete" id="store-delete-checked" data-delete-checked="store" type="button">チェック済みを削除</button>
+          <button class="bulk-delete" id="store-delete-checked" data-delete-checked="store" type="button">削除</button>
         </div>
         <form class="form" data-category="store">
           <input id="store-input" autocomplete="off" placeholder="例：牛乳、ティッシュ" aria-label="店で買うものを追加" />
@@ -157,7 +160,7 @@
         </div>
         <div class="items" id="online-list"></div>
         <div class="bulk-wrap">
-          <button class="bulk-delete" id="online-delete-checked" data-delete-checked="online" type="button">チェック済みを削除</button>
+          <button class="bulk-delete" id="online-delete-checked" data-delete-checked="online" type="button">削除</button>
         </div>
         <form class="form" data-category="online">
           <input id="online-input" autocomplete="off" placeholder="例：充電ケーブル" aria-label="ネットで買うものを追加" />
@@ -178,7 +181,7 @@
         </div>
         <div class="items" id="todo-list"></div>
         <div class="bulk-wrap">
-          <button class="bulk-delete" id="todo-delete-checked" data-delete-checked="todo" type="button">チェック済みを削除</button>
+          <button class="bulk-delete" id="todo-delete-checked" data-delete-checked="todo" type="button">削除</button>
         </div>
         <form class="form" data-category="todo">
           <input id="todo-input" autocomplete="off" placeholder="例：クリーニングに出す" aria-label="ToDoを追加" />
@@ -273,9 +276,7 @@
     const deleteBtn = document.getElementById(category + '-delete-checked');
     if(deleteBtn){
       deleteBtn.disabled = checkedCount === 0;
-      deleteBtn.textContent = checkedCount > 0
-        ? `チェック済みを削除（${checkedCount}件）`
-        : 'チェック済みを削除';
+      deleteBtn.textContent = '削除';
     }
   }
 
