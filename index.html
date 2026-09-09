@@ -426,9 +426,9 @@
   .hist-total{ font-size:12.5px; color:var(--ink-soft); }
 
   .backup-section{
-    margin:28px 20px 20px;
-    padding-top:20px;
-    border-top:1px solid var(--line);
+    margin:0 20px 20px;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--line);
   }
   .backup-buttons{
     display:flex;
@@ -594,12 +594,6 @@
       <input class="search-input" id="historySearch" type="text" placeholder="食べものを検索" autocomplete="off">
     </div>
     <div class="scroll" id="historyScroll">
-      <div id="historyList"></div>
-      <div class="empty-state" id="historyEmpty" style="display:none;">
-        <p class="t serif">記録がありません</p>
-        <p class="s">記録を登録すると、ここに一覧が表示されます。</p>
-      </div>
-
       <div class="backup-section">
         <p class="section-label" style="padding-left:0;">バックアップ</p>
         <div class="backup-buttons">
@@ -616,6 +610,12 @@
             <button class="secondary-btn danger-btn" id="importConfirmBtn">この内容で復元する</button>
           </div>
         </div>
+      </div>
+
+      <div id="historyList"></div>
+      <div class="empty-state" id="historyEmpty" style="display:none;">
+        <p class="t serif">記録がありません</p>
+        <p class="s">記録を登録すると、ここに一覧が表示されます。</p>
       </div>
     </div>
   </section>
