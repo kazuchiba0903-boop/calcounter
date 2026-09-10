@@ -176,16 +176,18 @@
     flex:0 0 auto;
   }
   .entry-del{
-    appearance:none; border:none; background:none;
-    color:var(--ink-faint);
+    appearance:none; border:none;
+    background:rgba(178,58,46,0.09);
+    color:var(--danger);
     width:38px; height:38px;
     margin:-6px -6px -6px 0;
     flex:0 0 auto;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    border-radius:8px;
+    border-radius:19px;
   }
-  .entry-del:active{ background:var(--line); color:var(--danger); }
+  .entry-del svg{ width:16px; height:16px; }
+  .entry-del:active{ background:var(--danger); color:#fff; }
 
   .empty-state{
     padding:40px 30px 20px;
@@ -263,15 +265,15 @@
   .date-nav{
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:6px;
   }
   .date-input{
     flex:1 1 auto;
     min-width:0;
     width:100%;
-    font-size:16px;
+    font-size:15px;
     font-family:'Work Sans', sans-serif;
-    padding:12px 14px;
+    padding:11px 10px;
     border-radius:12px;
     border:1.5px solid var(--line);
     background:var(--surface);
@@ -283,21 +285,21 @@
   .time-input{
     width:auto;
     flex:0 0 auto;
-    padding:9px 12px;
+    padding:11px 10px;
     font-size:14px;
   }
   .date-arrow{
     flex:0 0 auto;
-    width:42px; height:42px;
+    width:38px; height:38px;
     appearance:none;
     border:1.5px solid var(--line);
     background:var(--surface);
-    border-radius:12px;
+    border-radius:11px;
     display:flex; align-items:center; justify-content:center;
     color:var(--ink);
     cursor:pointer;
   }
-  .date-arrow svg{ width:19px; height:19px; }
+  .date-arrow svg{ width:17px; height:17px; }
   .date-arrow:active{ background:var(--accent-soft); border-color:var(--accent); }
   .date-arrow:disabled{ color:var(--ink-faint); opacity:0.5; cursor:default; }
   .date-arrow:disabled:active{ background:var(--surface); border-color:var(--line); }
@@ -544,7 +546,7 @@
           </div>
         </div>
 
-        <p class="field-label">記録する日付</p>
+        <p class="field-label">記録する日付・時刻</p>
         <div class="date-nav">
           <button class="date-arrow" id="datePrevBtn" type="button" aria-label="前の日">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
@@ -553,10 +555,8 @@
           <button class="date-arrow" id="dateNextBtn" type="button" aria-label="次の日">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
           </button>
+          <input class="date-input time-input" id="entryTimeInput" type="time">
         </div>
-
-        <p class="field-label" style="margin-top:18px;">時刻</p>
-        <input class="date-input time-input" id="entryTimeInput" type="time">
 
         <p class="field-label" style="margin-top:22px;">過去に入力したものから選ぶ</p>
         <select class="food-select" id="foodSelect">
