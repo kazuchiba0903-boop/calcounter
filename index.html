@@ -845,7 +845,7 @@
   function updateDateSummary(){
     var d = entryDateInput.value || todayKey();
     var dayEntries = entries.filter(function(e){ return e.date === d; })
-                             .sort(function(a,b){ return a.ts - b.ts; });
+                             .sort(function(a,b){ return b.ts - a.ts; });
 
     var headingEl = document.getElementById("dateFoodsHeading");
     var listEl = document.getElementById("dateFoodsList");
