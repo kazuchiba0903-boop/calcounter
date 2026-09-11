@@ -261,9 +261,9 @@
   }
   .food-input{
     width:100%;
-    font-size:20px;
+    font-size:17px;
     font-family:'Work Sans', sans-serif;
-    padding:14px 16px;
+    padding:10px 14px;
     border-radius:12px;
     border:1.5px solid var(--line);
     background:var(--surface);
@@ -332,24 +332,33 @@
     color:var(--ink-faint);
   }
 
-  .food-select{
-    width:100%;
-    font-size:15px;
+  .label-select-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .label-select-row .field-label{ flex:1 1 auto; min-width:0; }
+  .food-select-compact{
+    flex:0 1 auto;
+    max-width:46%;
+    font-size:12.5px;
     font-family:'Work Sans', sans-serif;
-    padding:13px 40px 13px 14px;
-    border-radius:12px;
+    padding:7px 26px 7px 10px;
+    border-radius:9px;
     border:1.5px solid var(--line);
     background-color:var(--surface);
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6858' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat:no-repeat;
-    background-position:right 12px center;
-    background-size:16px;
+    background-position:right 8px center;
+    background-size:13px;
     color:var(--ink);
     outline:none;
     -webkit-appearance:none;
     appearance:none;
+    text-overflow:ellipsis;
   }
-  .food-select:focus{ border-color:var(--accent); }
+  .food-select-compact:focus{ border-color:var(--accent); }
 
   .suggest-heading{
     padding:22px 0 8px;
@@ -397,19 +406,19 @@
   .cal-input-row{
     display:flex; align-items:baseline; gap:8px;
     border-bottom:2px solid var(--line);
-    padding-bottom:10px;
+    padding-bottom:6px;
   }
   .cal-input-row.filled{ border-color:var(--accent); }
   .cal-input{
     flex:1;
     border:none; outline:none; background:none;
     font-family:'Fraunces', serif;
-    font-size:40px;
+    font-size:28px;
     color:var(--ink);
     min-width:0;
     width:100%;
   }
-  .cal-unit{ font-size:16px; color:var(--ink-soft); }
+  .cal-unit{ font-size:14px; color:var(--ink-soft); }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
   .chip{
@@ -569,15 +578,17 @@
           <input class="date-input time-input" id="entryTimeInput" type="time">
         </div>
 
-        <p class="field-label" style="margin-top:22px;">過去に入力したものから選ぶ</p>
-        <select class="food-select" id="foodSelect">
-          <option value="" selected disabled>選択してください</option>
-        </select>
+        <div class="label-select-row" style="margin-top:22px;">
+          <span class="field-label" style="margin:0;">過去に入力したものから選ぶ</span>
+          <select class="food-select-compact" id="foodSelect">
+            <option value="" selected disabled>選択</option>
+          </select>
+        </div>
 
-        <p class="field-label" style="margin-top:22px;">何を食べましたか？</p>
+        <p class="field-label" style="margin-top:18px;">何を食べましたか？</p>
         <input class="food-input" id="foodInput" type="text" placeholder="例：醤油ラーメン" autocomplete="off" autocapitalize="off" autocorrect="off">
 
-        <p class="field-label" style="margin-top:18px;">摂取カロリー</p>
+        <p class="field-label" style="margin-top:14px;">摂取カロリー</p>
         <div class="cal-input-row" id="calInputRow">
           <input class="cal-input num" id="calInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
           <span class="cal-unit">kcal</span>
@@ -844,7 +855,7 @@
     var recent = entries.filter(function(e){ return e.date >= cutoff; });
     var stats = foodStats(recent);
     var names = Object.keys(stats).sort(function(a,b){ return stats[b].lastTs - stats[a].lastTs; });
-    foodSelect.innerHTML = '<option value="" selected disabled>選択してください</option>';
+    foodSelect.innerHTML = '<option value="" selected disabled>選択</option>';
     names.forEach(function(name){
       var s = stats[name];
       var opt = document.createElement("option");
