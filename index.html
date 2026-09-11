@@ -403,26 +403,36 @@
     font-weight:500;
     margin:2px 0 22px;
   }
-  .cal-input-row{
-    display:flex; align-items:center; gap:8px;
+  .cal-label-row{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
     flex-wrap:nowrap;
-    max-width:100%;
+    gap:10px;
+    width:100%;
   }
   .cal-input-box{
     display:flex; align-items:baseline; gap:6px;
     flex:0 1 auto;
+    width:auto;
+    max-width:170px;
     min-width:0;
+    overflow:hidden;
   }
   .cal-input{
-    flex:0 1 95px;
+    flex:0 0 auto;
+    width:105px;
+    max-width:105px;
+    box-sizing:border-box;
     border:none; outline:none; background:none;
     border-bottom:2px solid var(--line);
     padding-bottom:6px;
     font-family:'Fraunces', serif;
     font-size:28px;
     color:var(--ink);
-    min-width:60px;
     text-align:right;
+    -webkit-appearance:none;
+    appearance:none;
   }
   .cal-input.filled{ border-color:var(--accent); }
   .cal-unit{ font-size:14px; color:var(--ink-soft); flex:0 0 auto; white-space:nowrap; align-self:flex-end; padding-bottom:8px; }
@@ -437,7 +447,8 @@
     border-radius:10px;
     cursor:pointer;
     flex:0 0 auto;
-    margin-left:16px;
+    margin-left:auto;
+    width:auto;
   }
   .clear-entry-btn:active{ background:var(--line); color:var(--ink); }
 
@@ -609,8 +620,8 @@
         <p class="field-label" style="margin-top:18px;">何を食べましたか？</p>
         <input class="food-input" id="foodInput" type="text" placeholder="例：醤油ラーメン" autocomplete="off" autocapitalize="off" autocorrect="off">
 
-        <p class="field-label" style="margin-top:14px;">摂取カロリー</p>
-        <div class="cal-input-row" id="calInputRow">
+        <div class="cal-label-row" style="margin-top:14px;">
+          <span class="field-label" style="margin:0;">摂取カロリー</span>
           <div class="cal-input-box" id="calInputBox">
             <input class="cal-input num" id="calInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
             <span class="cal-unit">kcal</span>
