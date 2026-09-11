@@ -404,21 +404,43 @@
     margin:2px 0 22px;
   }
   .cal-input-row{
+    display:flex; align-items:center; gap:10px;
+    flex-wrap:wrap;
+    row-gap:10px;
+    max-width:100%;
+  }
+  .cal-input-box{
     display:flex; align-items:baseline; gap:8px;
     border-bottom:2px solid var(--line);
     padding-bottom:6px;
+    flex:0 1 auto;
+    min-width:0;
+    max-width:100%;
   }
-  .cal-input-row.filled{ border-color:var(--accent); }
+  .cal-input-box.filled{ border-color:var(--accent); }
   .cal-input{
-    flex:1;
+    flex:0 1 90px;
     border:none; outline:none; background:none;
     font-family:'Fraunces', serif;
     font-size:28px;
     color:var(--ink);
-    min-width:0;
-    width:100%;
+    min-width:30px;
   }
-  .cal-unit{ font-size:14px; color:var(--ink-soft); }
+  .cal-unit{ font-size:14px; color:var(--ink-soft); flex:0 0 auto; }
+  .clear-entry-btn{
+    margin-left:auto;
+    appearance:none;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-size:13px;
+    font-family:'Work Sans', sans-serif;
+    padding:7px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+  .clear-entry-btn:active{ background:var(--line); color:var(--ink); }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
   .chip{
@@ -590,8 +612,11 @@
 
         <p class="field-label" style="margin-top:14px;">摂取カロリー</p>
         <div class="cal-input-row" id="calInputRow">
-          <input class="cal-input num" id="calInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
-          <span class="cal-unit">kcal</span>
+          <div class="cal-input-box" id="calInputBox">
+            <input class="cal-input num" id="calInput" type="number" inputmode="decimal" min="0" step="1" placeholder="0">
+            <span class="cal-unit">kcal</span>
+          </div>
+          <button class="clear-entry-btn" id="clearEntryBtn" type="button">クリア</button>
         </div>
         <div class="chip-row" id="calChips"></div>
 
@@ -826,7 +851,7 @@
   var dateHeroTotal = document.getElementById("dateHeroTotal");
   var dateHeroDelta = document.getElementById("dateHeroDelta");
   var calInput = document.getElementById("calInput");
-  var calInputRow = document.getElementById("calInputRow");
+  var calInputBox = document.getElementById("calInputBox");
   var calChips = document.getElementById("calChips");
   var registerBtn = document.getElementById("registerBtn");
 
@@ -839,16 +864,26 @@
     updateDateSummary();
   }
 
-  function resetEntryFields(){
+  function clearEntryInputs(){
     draft.food = "";
     draft.calories = null;
     foodInput.value = "";
     calInput.value = "";
     calChips.innerHTML = "";
-    calInputRow.classList.remove("filled");
-    entryTimeInput.value = formatTime(new Date());
+    calInputBox.classList.remove("filled");
+    if(foodSelect) foodSelect.selectedIndex = 0;
     updateRegisterState();
   }
+
+  function resetEntryFields(){
+    clearEntryInputs();
+    entryTimeInput.value = formatTime(new Date());
+  }
+
+  document.getElementById("clearEntryBtn").addEventListener("click", function(){
+    clearEntryInputs();
+    foodInput.focus();
+  });
 
   function populateFoodSelect(){
     var cutoff = recentDaysCutoffKey(5);
@@ -959,7 +994,7 @@
     var v = parseFloat(calInput.value);
     var calOk = !isNaN(v) && v > 0;
     registerBtn.disabled = !(foodOk && calOk);
-    calInputRow.classList.toggle("filled", calInput.value.length > 0);
+    calInputBox.classList.toggle("filled", calInput.value.length > 0);
   }
 
   foodInput.addEventListener("input", function(){
