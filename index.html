@@ -721,6 +721,7 @@
   var loaded = false;
 
   var draft = { food: "", calories: null, date: null };
+  var editingId = null;
   var lastDeleted = null; // {entry, index}
   var toastTimer = null;
 
@@ -884,11 +885,13 @@
 
   function resetAddFood(){
     draft.date = todayKey();
+    editingId = null;
     entryDateInput.value = todayKey();
     entryDateInput.max = todayKey();
     resetEntryFields();
     populateFoodSelect();
     updateDateSummary();
+    updateEditModeUI();
   }
 
   function clearEntryInputs(){
@@ -907,8 +910,29 @@
     entryTimeInput.value = formatTime(new Date());
   }
 
+  function updateEditModeUI(){
+    registerBtn.textContent = editingId ? "更新する" : "登録";
+  }
+
+  function startEditingEntry(id){
+    var entry = entries.find(function(en){ return en.id === id; });
+    if(!entry) return;
+    editingId = id;
+    entryDateInput.value = entry.date;
+    entryTimeInput.value = formatTime(new Date(entry.ts));
+    foodInput.value = entry.food;
+    calInput.value = entry.calories;
+    refreshChips();
+    updateRegisterState();
+    updateEditModeUI();
+    document.querySelector(".scroll").scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(function(){ foodInput.focus(); }, 300);
+  }
+
   document.getElementById("clearEntryBtn").addEventListener("click", function(){
+    editingId = null;
     clearEntryInputs();
+    updateEditModeUI();
     foodInput.focus();
   });
 
@@ -955,6 +979,7 @@
         var dt = new Date(e.ts);
         var li = document.createElement("li");
         li.className = "entry-row";
+        li.style.cursor = "pointer";
         li.innerHTML =
           '<span class="entry-time num">' + formatTime(dt) + '</span>' +
           '<span class="entry-food">' + escapeHtml(e.food) + '</span>' +
@@ -962,6 +987,10 @@
           '<button class="entry-del" aria-label="削除" data-id="' + e.id + '">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
           '</button>';
+        li.addEventListener("click", function(ev){
+          if(ev.target.closest(".entry-del")) return;
+          startEditingEntry(e.id);
+        });
         listEl.appendChild(li);
       });
     }
@@ -1056,13 +1085,24 @@
     var combined = new Date(dateStr + "T" + timeStr + ":00");
     var ts = isNaN(combined.getTime()) ? now.getTime() : combined.getTime();
 
-    entries.push({
-      id: "e" + now.getTime() + Math.random().toString(36).slice(2,7),
-      food: food,
-      calories: v,
-      date: dateStr,
-      ts: ts
-    });
+    if(editingId){
+      var idx = entries.findIndex(function(en){ return en.id === editingId; });
+      if(idx !== -1){
+        entries[idx].food = food;
+        entries[idx].calories = v;
+        entries[idx].date = dateStr;
+        entries[idx].ts = ts;
+      }
+      editingId = null;
+    }else{
+      entries.push({
+        id: "e" + now.getTime() + Math.random().toString(36).slice(2,7),
+        food: food,
+        calories: v,
+        date: dateStr,
+        ts: ts
+      });
+    }
     saveEntries();
 
     resetEntryFields();
@@ -1070,7 +1110,10 @@
     updateDateSummary();
     renderHome();
     renderHistory();
-    foodInput.focus();
+    updateEditModeUI();
+    foodInput.blur();
+    calInput.blur();
+    document.querySelector(".scroll").scrollTo({ top: 0, behavior: "smooth" });
   });
 
   /* ---------------- HISTORY ---------------- */
