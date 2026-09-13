@@ -451,6 +451,21 @@
     width:auto;
   }
   .clear-entry-btn:active{ background:var(--line); color:var(--ink); }
+  .now-btn{
+    appearance:none;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-size:12.5px;
+    font-family:'Work Sans', sans-serif;
+    padding:6px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    flex:0 0 auto;
+    margin-left:auto;
+    white-space:nowrap;
+  }
+  .now-btn:active{ background:var(--accent-soft); border-color:var(--accent); color:var(--ink); }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
   .chip{
@@ -617,7 +632,10 @@
           </select>
         </div>
 
-        <p class="field-label" style="margin-top:18px;">何を食べましたか？</p>
+        <div class="cal-label-row" style="margin-top:18px;">
+          <span class="field-label" style="margin:0;">何を食べましたか？</span>
+          <button class="now-btn" id="setNowBtn" type="button">現在時刻に設定</button>
+        </div>
         <input class="food-input" id="foodInput" type="text" placeholder="例：醤油ラーメン" autocomplete="off" autocapitalize="off" autocorrect="off">
 
         <div class="cal-label-row" style="margin-top:14px;">
@@ -892,6 +910,10 @@
   document.getElementById("clearEntryBtn").addEventListener("click", function(){
     clearEntryInputs();
     foodInput.focus();
+  });
+
+  document.getElementById("setNowBtn").addEventListener("click", function(){
+    entryTimeInput.value = formatTime(new Date());
   });
 
   function populateFoodSelect(){
