@@ -1024,6 +1024,32 @@
   datePrevBtn.addEventListener("click", function(){ shiftEntryDate(-1); });
   dateNextBtn.addEventListener("click", function(){ shiftEntryDate(1); });
 
+  (function setupHeroSwipe(){
+    var hero = document.getElementById("dateHero");
+    var startX = null, startY = null, tracking = false;
+    var SWIPE_THRESHOLD = 40;
+
+    hero.addEventListener("touchstart", function(ev){
+      if(ev.touches.length !== 1) return;
+      startX = ev.touches[0].clientX;
+      startY = ev.touches[0].clientY;
+      tracking = true;
+    }, { passive: true });
+
+    hero.addEventListener("touchend", function(ev){
+      if(!tracking || startX === null) { tracking = false; return; }
+      var endX = ev.changedTouches[0].clientX;
+      var endY = ev.changedTouches[0].clientY;
+      var dx = endX - startX;
+      var dy = endY - startY;
+      tracking = false;
+      startX = null; startY = null;
+      if(Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if(dx < 0){ shiftEntryDate(1); }
+      else{ shiftEntryDate(-1); }
+    });
+  })();
+
   function refreshChips(){
     var name = foodInput.value.trim();
     var stats = name ? foodStats()[name] : null;
