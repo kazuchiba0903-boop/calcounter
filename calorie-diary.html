@@ -1379,7 +1379,14 @@
 
   /* ---------------- nav wiring ---------------- */
   document.querySelectorAll(".tab").forEach(function(t){
-    t.addEventListener("click", function(){ showView(t.dataset.tab); });
+    t.addEventListener("click", function(){
+      if(t.dataset.tab === "home"){
+        entryDateInput.value = todayKey();
+        entryTimeInput.value = formatTime(new Date());
+        updateDateSummary();
+      }
+      showView(t.dataset.tab);
+    });
   });
   document.querySelectorAll("[data-back]").forEach(function(b){
     b.addEventListener("click", function(){ showView(b.dataset.back); });
