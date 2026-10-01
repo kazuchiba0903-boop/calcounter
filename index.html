@@ -274,6 +274,48 @@
   }
   .food-input:focus{ border-color:var(--accent); }
 
+  .food-input-wrap{ position:relative; }
+  .food-suggest{
+    position:absolute;
+    left:0; right:0; top:calc(100% + 6px);
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 8px 20px rgba(43,42,37,0.12);
+    overflow:hidden;
+    z-index:20;
+    display:none;
+  }
+  .food-suggest.open{ display:block; }
+  .food-suggest-item{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    width:100%;
+    padding:11px 14px;
+    background:none;
+    border:none;
+    border-bottom:1px solid var(--line);
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    text-align:left;
+  }
+  .food-suggest-item:last-child{ border-bottom:none; }
+  .food-suggest-item:active{ background:var(--bg); }
+  .food-suggest-item .name mark{
+    background:none;
+    color:var(--accent-dark);
+    font-weight:600;
+  }
+  .food-suggest-item .cal{
+    flex:0 0 auto;
+    font-size:12.5px;
+    color:var(--ink-faint);
+    white-space:nowrap;
+  }
+
   .date-nav{
     display:flex;
     align-items:center;
@@ -638,7 +680,10 @@
           <span class="field-label" style="margin:0;">何を食べましたか？</span>
           <button class="now-btn" id="setNowBtn" type="button">現在時刻に設定</button>
         </div>
-        <input class="food-input" id="foodInput" type="text" placeholder="例：醤油ラーメン" autocomplete="off" autocapitalize="off" autocorrect="off">
+        <div class="food-input-wrap">
+          <input class="food-input" id="foodInput" type="text" placeholder="例：醤油ラーメン" autocomplete="off" autocapitalize="off" autocorrect="off">
+          <div class="food-suggest" id="foodSuggest"></div>
+        </div>
 
         <div class="cal-label-row" style="margin-top:14px;">
           <span class="field-label" style="margin:0;">摂取カロリー</span>
@@ -830,7 +875,7 @@
 
   /* ---------------- HOME ---------------- */
   function renderHome(){
-    document.getElementById("homeDate").textContent = formatDateLabel(todayKey());
+    document.getElementById("homeDate").textContent = formatDateLabel(entryDateInput.value || todayKey());
   }
 
   function escapeHtml(s){
@@ -875,6 +920,7 @@
 
   /* ---------------- ADD FOOD (+ calorie, one screen) ---------------- */
   var foodInput = document.getElementById("foodInput");
+  var foodSuggest = document.getElementById("foodSuggest");
   var foodSelect = document.getElementById("foodSelect");
   var entryDateInput = document.getElementById("entryDateInput");
   var entryTimeInput = document.getElementById("entryTimeInput");
@@ -1006,6 +1052,8 @@
     dateHeroDelta.textContent = deltaStr;
 
     dateNextBtn.disabled = (d >= entryDateInput.max);
+
+    document.getElementById("homeDate").textContent = formatDateLabel(d);
   }
 
   entryDateInput.addEventListener("change", function(){
@@ -1085,9 +1133,73 @@
     calInput.classList.toggle("filled", calInput.value.length > 0);
   }
 
+  function hideFoodSuggest(){
+    foodSuggest.classList.remove("open");
+    foodSuggest.innerHTML = "";
+  }
+
+  function selectFoodSuggestion(name){
+    foodInput.value = name;
+    var stats = foodStats()[name];
+    if(stats) calInput.value = stats.lastCal;
+    hideFoodSuggest();
+    refreshChips();
+    updateRegisterState();
+    calInput.focus();
+  }
+
+  function updateFoodSuggest(){
+    var q = foodInput.value.trim();
+    if(!q){ hideFoodSuggest(); return; }
+    var qLower = q.toLowerCase();
+    var stats = foodStats();
+    var matches = Object.keys(stats)
+      .filter(function(name){
+        return name !== q && name.toLowerCase().indexOf(qLower) !== -1;
+      })
+      .sort(function(a,b){
+        // 前方一致を優先し、同条件なら最近食べたもの順
+        var aStarts = a.toLowerCase().indexOf(qLower) === 0 ? 0 : 1;
+        var bStarts = b.toLowerCase().indexOf(qLower) === 0 ? 0 : 1;
+        if(aStarts !== bStarts) return aStarts - bStarts;
+        return stats[b].lastTs - stats[a].lastTs;
+      })
+      .slice(0, 6);
+
+    if(matches.length === 0){ hideFoodSuggest(); return; }
+
+    foodSuggest.innerHTML = "";
+    matches.forEach(function(name){
+      var idx = name.toLowerCase().indexOf(qLower);
+      var nameHtml = escapeHtml(name);
+      if(idx !== -1){
+        nameHtml = escapeHtml(name.slice(0, idx)) +
+          "<mark>" + escapeHtml(name.slice(idx, idx + q.length)) + "</mark>" +
+          escapeHtml(name.slice(idx + q.length));
+      }
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "food-suggest-item";
+      btn.innerHTML =
+        '<span class="name">' + nameHtml + '</span>' +
+        '<span class="cal">' + formatNum(stats[name].lastCal) + 'kcal</span>';
+      btn.addEventListener("click", function(){ selectFoodSuggestion(name); });
+      foodSuggest.appendChild(btn);
+    });
+    foodSuggest.classList.add("open");
+  }
+
   foodInput.addEventListener("input", function(){
     refreshChips();
     updateRegisterState();
+    updateFoodSuggest();
+  });
+  foodInput.addEventListener("focus", function(){
+    updateFoodSuggest();
+  });
+  foodInput.addEventListener("blur", function(){
+    // クリックで選択できるよう少し遅らせてから閉じる
+    setTimeout(hideFoodSuggest, 150);
   });
   calInput.addEventListener("input", updateRegisterState);
 
