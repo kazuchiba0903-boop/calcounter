@@ -506,9 +506,10 @@
     border-radius:10px;
     cursor:pointer;
     flex:0 0 auto;
-    margin-left:auto;
     white-space:nowrap;
   }
+  .now-btn-group{ display:flex; gap:6px; margin-left:auto; flex:0 0 auto; }
+  @media (max-width:340px){ .now-btn{ font-size:10.5px; padding:6px 5px; } .now-btn-group{ gap:3px; } .cal-label-row .field-label{ white-space:nowrap; font-size:12px !important; } }
   .now-btn:active{ background:var(--accent-soft); border-color:var(--accent); color:var(--ink); }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
@@ -678,7 +679,10 @@
 
         <div class="cal-label-row" style="margin-top:18px;">
           <span class="field-label" style="margin:0;">何を食べましたか？</span>
-          <button class="now-btn" id="setNowBtn" type="button">現在時刻に設定</button>
+          <div class="now-btn-group">
+            <button class="now-btn" id="setTodayBtn" type="button">今日に設定</button>
+            <button class="now-btn" id="setNowBtn" type="button">現在時刻に設定</button>
+          </div>
         </div>
         <div class="food-input-wrap">
           <input class="food-input" id="foodInput" type="text" placeholder="例：醤油ラーメン" autocomplete="off" autocapitalize="off" autocorrect="off">
@@ -982,6 +986,11 @@
     clearEntryInputs();
     updateEditModeUI();
     foodInput.focus();
+  });
+
+  document.getElementById("setTodayBtn").addEventListener("click", function(){
+    entryDateInput.value = todayKey();
+    updateDateSummary();
   });
 
   document.getElementById("setNowBtn").addEventListener("click", function(){
