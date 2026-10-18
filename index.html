@@ -64,6 +64,9 @@
     align-items:center;
     gap:10px;
   }
+  .topbar-total{ margin-left:auto; text-align:right; white-space:nowrap; color:var(--accent-dark); }
+  .topbar-total-n{ font-size:26px; font-weight:600; line-height:1; }
+  .topbar-total-u{ font-size:12px; color:var(--ink-soft); margin-left:3px; }
   .topbar h1{
     font-size:19px;
     font-weight:600;
@@ -365,6 +368,8 @@
     text-align:center;
     min-height:17px;
   }
+  .foods-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:18px 2px 8px; }
+  .now-btn:disabled{ opacity:.4; cursor:default; }
   .section-label-inline{
     margin:18px 2px 8px;
     font-size:12.5px;
@@ -646,6 +651,9 @@
         <p class="home-date" id="homeDate"></p>
         <h1>カロリー手帖</h1>
       </div>
+      <div class="topbar-total" id="topbarTotalBox">
+        <span class="topbar-total-n num serif" id="topbarTotal">0</span><span class="topbar-total-u">kcal</span>
+      </div>
     </div>
     <div class="scroll">
       <div class="form-wrap">
@@ -701,9 +709,14 @@
 
         <button class="primary-btn" id="registerBtn" disabled>登録</button>
 
-        <p class="section-label-inline" id="dateFoodsHeading" style="display:none;"></p>
-        <ul class="entry-list" id="dateFoodsList" style="padding:0; margin:0;"></ul>
-        <p class="date-foods-empty" id="dateFoodsEmpty"></p>
+        <div id="dateFoodsArea" style="min-height:140px;">
+          <div class="foods-head">
+            <p class="section-label-inline" id="dateFoodsHeading" style="margin:0;"></p>
+            <button class="now-btn" id="showTodayBtn" type="button">今日を表示</button>
+          </div>
+          <ul class="entry-list" id="dateFoodsList" style="padding:0; margin:0;"></ul>
+          <p class="date-foods-empty" id="dateFoodsEmpty"></p>
+        </div>
       </div>
     </div>
   </section>
@@ -1023,12 +1036,11 @@
     listEl.innerHTML = "";
 
     if(dayEntries.length === 0){
-      headingEl.style.display = "none";
+      headingEl.textContent = formatDateLabel(d) + "に記録したもの";
       listEl.style.display = "none";
       emptyEl.style.display = "block";
-      emptyEl.textContent = formatDateLabel(d) + "の記録はまだありません";
+      emptyEl.textContent = "記録はまだありません";
     }else{
-      headingEl.style.display = "block";
       headingEl.textContent = formatDateLabel(d) + "に記録したもの";
       listEl.style.display = "block";
       emptyEl.style.display = "none";
@@ -1055,6 +1067,8 @@
     var total = dayEntries.reduce(function(s,e){ return s + e.calories; }, 0);
     dateHeroLabel.textContent = formatDateLabel(d) + "の合計";
     dateHeroTotal.textContent = formatNum(total);
+    document.getElementById("topbarTotal").textContent = formatNum(total);
+    document.getElementById("showTodayBtn").disabled = (d === todayKey());
 
     var deltaKg = (total - 2350) / 7200;
     var deltaStr = (deltaKg >= 0 ? "+" : "") + deltaKg.toFixed(2) + "kg";
@@ -1083,8 +1097,7 @@
   datePrevBtn.addEventListener("click", function(){ shiftEntryDate(-1); });
   dateNextBtn.addEventListener("click", function(){ shiftEntryDate(1); });
 
-  (function setupHeroSwipe(){
-    var hero = document.getElementById("dateHero");
+  [document.getElementById("dateHero"), document.getElementById("dateFoodsArea")].forEach(function setupSwipe(hero){
     var startX = null, startY = null, tracking = false;
     var SWIPE_THRESHOLD = 40;
 
@@ -1107,7 +1120,12 @@
       if(dx < 0){ shiftEntryDate(1); }
       else{ shiftEntryDate(-1); }
     });
-  })();
+  });
+
+  document.getElementById("showTodayBtn").addEventListener("click", function(){
+    entryDateInput.value = todayKey();
+    updateDateSummary();
+  });
 
   function refreshChips(){
     var name = foodInput.value.trim();
